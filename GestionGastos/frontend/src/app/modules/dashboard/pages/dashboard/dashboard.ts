@@ -21,7 +21,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private subIngreso!: Subscription;
   private subGastos!: Subscription;
 
-  // Valores dinámicos para las tarjetas KPI
   saldoActual: number = 0.00;
   ingresoMes: number = 0.00;
   gastosMes: number = 0.00;
@@ -44,7 +43,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   recalcularSaldo(): void {
-    this.saldoActual = this.ingresoMes - this.gastosMes;
+    // 1. Saldo disponible antes de retener ahorro
+    const saldoBruto = Math.max(0, this.ingresoMes - this.gastosMes);
+
+    // 2. Extraemos el 5% para ahorro
+    this.totalAhorro = saldoBruto * 0.05;
+
+    // 3. Restamos el ahorro al saldo actual
+    this.saldoActual = saldoBruto - this.totalAhorro;
   }
 
   ngOnDestroy(): void {
