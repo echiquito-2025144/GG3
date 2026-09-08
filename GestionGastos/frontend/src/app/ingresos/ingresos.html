@@ -107,12 +107,12 @@
             
             <tr *ngFor="let gasto of listaGastos; let i = index">
               <td>
-                <input 
-                  type="text" 
+                <textarea 
                   [(ngModel)]="gasto.concepto" 
                   placeholder="Ingrese datos" 
-                  class="table-input bold-text"
-                />
+                  class="table-input bold-text textarea-auto"
+                  rows="1"
+                ></textarea>
               </td>
               <td class="monto-cell">
                 <span class="currency-label">Q.</span>

@@ -253,6 +253,8 @@
 .gastos-table td {
   border: 1px solid #E5E7EB;
   padding: 0;
+  vertical-align: top;
+  word-break: break-word;
 }
 
 .table-input {
@@ -271,6 +273,26 @@
   font-weight: 700;
 }
 
+/* Estilos para el Textarea dinámico */
+.textarea-auto {
+  width: 100%;
+  min-height: 38px;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  display: block;
+}
+
 /* ==========================================
    Ajustes para las Celdas y Filas Especiales
    ========================================== */
@@ -279,6 +301,7 @@
   display: flex;
   align-items: center;
   padding-left: 12px !important;
+  min-height: 38px;
 }
 
 .currency-label {
