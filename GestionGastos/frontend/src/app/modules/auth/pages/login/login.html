@@ -20,7 +20,12 @@
 
     <h2 class="login-title">Login</h2>
 
-    <!-- Formulario de Inicio de Sesión -->
+    <!-- Alerta de Mensajes de Error -->
+    <div *ngIf="errorMensaje" class="error-alert">
+      {{ errorMensaje }}
+    </div>
+
+    <!-- Formulario de Inicio de Sesión Tradicional -->
     <form (ngSubmit)="onSubmit()" class="login-form">
       
       <div class="form-group">
@@ -50,10 +55,20 @@
 
     </form>
 
+    <!-- Separador para Google Sign-In -->
+    <div class="divider">
+      <span>OR</span>
+    </div>
+
+    <!-- Contenedor donde la API de Google renderiza el botón -->
+    <div class="google-btn-wrapper">
+      <div #googleBtn></div>
+    </div>
+
     <!-- Pie de página con enlace a registro -->
     <div class="login-footer">
       <span>Don't have an account? </span>
-      <a routerLink="/register" class="register-link">Password / Register</a>
+      <a routerLink="/register" class="register-link">Register</a>
     </div>
 
   </div>
