@@ -40,6 +40,21 @@
   text-align: center;
 }
 
+/* Alerta de Error de Autenticación */
+.error-alert {
+  width: 100%;
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 1px solid #EF4444;
+  color: #FCA5A5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
 .login-form {
   width: 100%;
 }
@@ -98,6 +113,41 @@
 
 .btn-login:active {
   transform: scale(0.98);
+}
+
+/* Divisor OR */
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 22px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(226, 216, 179, 0.2);
+}
+
+.divider span {
+  padding: 0 12px;
+  color: #A0AEC0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Contenedor Botón de Google */
+.google-btn-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.google-btn-wrapper > div {
+  width: 100%;
 }
 
 .login-footer {
