@@ -58,30 +58,29 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Manejador del Login con Google (Procesamiento cliente sin Backend)
+  // Manejador del Login con Google integrado con AuthService
   handleGoogleLogin(response: any): void {
     const idToken = response.credential;
-    const usuarioGoogle = this.decodificarJwt(idToken);
     
-    if (usuarioGoogle) {
-      // Guardar información del usuario en localStorage
-      localStorage.setItem('user', JSON.stringify({
-        nombre: usuarioGoogle.name,
-        email: usuarioGoogle.email,
-        foto: usuarioGoogle.picture,
-        token: idToken,
-        metodo: 'google'
-      }));
-
-      // Redirección dentro de la zona reactiva de Angular
+    if (!idToken) {
       this.ngZone.run(() => {
-        this.router.navigate(['/dashboard']);
+        this.errorMensaje = 'No se pudo obtener el token de Google.';
       });
-    } else {
-      this.ngZone.run(() => {
-        this.errorMensaje = 'No se pudo obtener la información de la cuenta de Google.';
-      });
+      return;
     }
+
+    this.authService.loginConGoogle(idToken).subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          this.router.navigate(['/dashboard']);
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          this.errorMensaje = err.error?.message || 'Error al autenticar con la cuenta de Google.';
+        });
+      }
+    });
   }
 
   // Manejador del Login Local Tradicional
@@ -99,23 +98,5 @@ export class LoginComponent implements OnInit, AfterViewInit {
         this.errorMensaje = err.error?.message || 'Credenciales incorrectas o problema de conexión.';
       }
     });
-  }
-
-  // Utilidad interna para decodificar la carga útil del JWT enviado por Google
-  private decodificarJwt(token: string): any {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      console.error('Error al decodificar el token de Google', e);
-      return null;
-    }
   }
 }
