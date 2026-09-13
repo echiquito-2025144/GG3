@@ -10,11 +10,16 @@ export interface ItemGasto {
   providedIn: 'root'
 })
 export class FinanzasService {
-  private readonly INGRESO_KEY = 'ingreso_mes_actual';
-  private readonly GASTOS_KEY = 'gastos_mes_actual';
-  private readonly LISTA_GASTOS_KEY = 'lista_gastos_actual';
+  // Clave dinámica según el usuario activo para no mezclar datos de cuentas distintas
+  private get userPrefix(): string {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.email ? `nexus_${user.email}_` : 'nexus_guest_';
+  }
 
-  // Cargar lista desde localStorage o inicializar con 4 filas vacías si no existe nada guardado
+  private get INGRESO_KEY(): string { return `${this.userPrefix}ingreso_mes_actual`; }
+  private get GASTOS_KEY(): string { return `${this.userPrefix}gastos_mes_actual`; }
+  private get LISTA_GASTOS_KEY(): string { return `${this.userPrefix}lista_gastos_actual`; }
+
   private listaInicial: ItemGasto[] = this.obtenerListaInicial();
   private ingresoInicial = Number(localStorage.getItem(this.INGRESO_KEY)) || 10;
   private gastosIniciales = Number(localStorage.getItem(this.GASTOS_KEY)) || 0;
