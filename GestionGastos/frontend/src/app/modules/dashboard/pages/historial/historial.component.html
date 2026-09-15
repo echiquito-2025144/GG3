@@ -1,0 +1,66 @@
+<div class="historial-container">
+  <!-- Header interno NEXUS FINANCE -->
+  <header class="historial-header">
+    <div class="brand-title">
+      <h2>NEXUS <span>FINANCE</span></h2>
+      <p class="subtitle">NEXUS SOFTWARE STUDIOS</p>
+    </div>
+  </header>
+
+  <section class="historial-body">
+    <h2 class="page-title">Historial de Registros Diarios</h2>
+    <p class="page-description">Consulta el balance acumulado y el detalle de cada día finalizado.</p>
+
+    <!-- Estado vacío cuando no hay historial -->
+    <div *ngIf="historial.length === 0" class="empty-card">
+      <div class="empty-icon">📂</div>
+      <h3>No hay registros finalizados</h3>
+      <p>Los registros de cada día se guardarán automáticamente una vez transcurridas las 24 horas.</p>
+    </div>
+
+    <!-- Grid de Tarjetas -->
+    <div class="historial-grid" *ngIf="historial.length > 0">
+      <div class="card-historial" *ngFor="let item of historial">
+        
+        <div class="card-header">
+          <span class="fecha-tag">📅 {{ item.fecha }}</span>
+          <button class="btn-delete" (click)="eliminarRegistro(item.id)" title="Eliminar registro">
+            🗑️
+          </button>
+        </div>
+
+        <div class="card-content">
+          <div *ngIf="!item.tieneRegistros" class="no-data-badge">
+            ⚠️ No se escribió nada este día
+          </div>
+
+          <div *ngIf="item.tieneRegistros" class="stats-summary">
+            <div class="stat-item">
+              <span class="label">Ingreso:</span>
+              <span class="val green">Q. {{ item.ingresosTotal | number:'1.2-2' }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Gastos:</span>
+              <span class="val red">Q. {{ item.gastosTotal | number:'1.2-2' }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Saldo:</span>
+              <span class="val blue">Q. {{ item.saldoRestante | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="item.tieneRegistros && item.detallesGastos.length > 0" class="gastos-breakdown">
+            <h4>Detalle de gastos:</h4>
+            <ul>
+              <li *ngFor="let gasto of item.detallesGastos">
+                <span>{{ gasto.concepto || 'Sin concepto' }}</span>
+                <strong>Q. {{ (gasto.monto || 0) | number:'1.2-2' }}</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>

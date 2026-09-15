@@ -11,6 +11,10 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'ingresos', component: IngresosComponent },
+  { 
+    path: 'historial', 
+    loadComponent: () => import('./modules/dashboard/pages/historial/historial.component').then(m => m.HistorialComponent)
+  },
   { path: 'gastos', component: GastosComponent },
   { path: '**', redirectTo: 'login' }
 ];

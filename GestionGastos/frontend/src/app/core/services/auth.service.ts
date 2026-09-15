@@ -23,7 +23,6 @@ export class AuthService {
     }
   }
 
-  // 1. Método Login Local
   login(email: string, passwordPlana: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password: passwordPlana }).pipe(
       tap((res: any) => {
@@ -34,7 +33,6 @@ export class AuthService {
     );
   }
 
-  // 2. Método Registro Local (Añadido para corregir el error TS2339)
   registro(nombre: string, email: string, passwordPlana: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/register`, { nombre, email, password: passwordPlana }).pipe(
       tap((res: any) => {
@@ -45,7 +43,6 @@ export class AuthService {
     );
   }
 
-  // 3. Método Login / Registro con Google
   loginConGoogle(googleToken: string): Observable<any> {
     const usuarioGooglePayload = this.decodificarJwtPayload(googleToken);
 
@@ -60,16 +57,15 @@ export class AuthService {
     return of({ success: true, token: googleToken, usuario });
   }
 
-  // 4. Guardar Sesión
   guardarSesion(token: string, usuario: any): void {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
     
+    // Notifica cambio de usuario al servicio de finanzas
     this.finanzasService.cargarDatosUsuario();
-    this.iniciarTemporizadorExpiracion(token);
+    this.iniciarTemporizadorExpiracion(token, usuario);
   }
 
-  // 5. Limpiar Sesión
   private limpiarSesion(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
@@ -120,14 +116,22 @@ export class AuthService {
     });
   }
 
-  iniciarTemporizadorExpiracion(token: string): void {
+  iniciarTemporizadorExpiracion(token: string, usuarioParam?: any): void {
     try {
-      const payload = this.decodificarJwtPayload(token);
-      if (!payload || !payload.exp) return;
-
-      const tiempoRestanteMs = (payload.exp * 1000) - Date.now();
-
       if (this.timerExpiracion) clearTimeout(this.timerExpiracion);
+
+      const usuario = usuarioParam || this.obtenerUsuario();
+      const payload = this.decodificarJwtPayload(token);
+      
+      const esGoogle = usuario?.metodo === 'google' || payload?.iss?.includes('google');
+      let tiempoRestanteMs = 0;
+
+      if (esGoogle) {
+        tiempoRestanteMs = 2 * 60 * 1000; // 2 minutos exactos para cuentas de Google
+      } else {
+        if (!payload || !payload.exp) return;
+        tiempoRestanteMs = (payload.exp * 1000) - Date.now();
+      }
 
       if (tiempoRestanteMs > 0) {
         const maxDelay = 2147483647;

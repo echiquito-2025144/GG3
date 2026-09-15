@@ -1,6 +1,6 @@
 <div class="dashboard-layout">
   
-  <!-- Sidebar -->
+  <!-- Sidebar (Permanece SIEMPRE visible) -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" class="sidebar-logo">
@@ -20,18 +20,35 @@
 
     <nav class="sidebar-menu">
       <div class="menu-top">
-        <a routerLink="/dashboard" class="menu-item active">
+        <!-- Botón Inicio -->
+        <button 
+          type="button"
+          (click)="cambiarVista('inicio')" 
+          [class.active]="vistaActiva === 'inicio'" 
+          class="menu-item">
           <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 11h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zM4 21h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1z"/></svg>
           Inicio
-        </a>
-        <a routerLink="/ingresos" class="menu-item">
+        </button>
+
+        <!-- Botón Ingresos (Cambiado a botón de cambio de vista interna) -->
+        <button 
+          type="button"
+          (click)="cambiarVista('ingresos')" 
+          [class.active]="vistaActiva === 'ingresos'" 
+          class="menu-item">
           <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19h14v2H3V3h2v16zm4-8h2v6H9v-6zm4-4h2v10h-2V7zm4-4h2v14h-2V3z"/></svg>
           Ingresos
-        </a>
-        <a routerLink="/historial" class="menu-item">
+        </button>
+        
+        <!-- Botón Historial -->
+        <button 
+          type="button"
+          (click)="cambiarVista('historial')" 
+          [class.active]="vistaActiva === 'historial'" 
+          class="menu-item">
           <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
           Historial
-        </a>
+        </button>
       </div>
 
       <div class="menu-bottom">
@@ -52,8 +69,12 @@
     
     <header class="content-header">
       <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Resumen de sus gastos personales de este mes</p>
+        <h1 class="page-title">
+          {{ vistaActiva === 'inicio' ? 'Dashboard' : (vistaActiva === 'ingresos' ? 'Ingresos' : 'Historial') }}
+        </h1>
+        <p class="page-subtitle">
+          {{ vistaActiva === 'inicio' ? 'Resumen de sus gastos personales de este mes' : (vistaActiva === 'ingresos' ? 'Gestión de ingresos y gastos' : '15/09/2026') }}
+        </p>
       </div>
       <div class="user-profile">
         <span class="user-name">{{ usuario?.nombre || 'Usuario' }}</span>
@@ -63,9 +84,10 @@
       </div>
     </header>
 
-    <section class="kpi-grid">
+    <!-- VISTA INICIO: KPIs -->
+    <section class="kpi-grid" *ngIf="vistaActiva === 'inicio'">
       
-      <!-- Saldo Actual (95% del balance disponible) -->
+      <!-- Saldo Actual -->
       <div class="kpi-card">
         <div class="card-header">
           <span class="card-title">Saldo Actual</span>
@@ -98,7 +120,7 @@
         </div>
       </div>
 
-      <!-- Total Ahorro (5% del balance disponible) -->
+      <!-- Total Ahorro -->
       <div class="kpi-card">
         <div class="card-header">
           <span class="card-title">Total Ahorro</span>
@@ -110,6 +132,12 @@
       </div>
 
     </section>
+
+    <!-- VISTA INGRESOS: Si tienes el componente de Ingresos declarado o la opción de router-outlet -->
+    <app-ingresos *ngIf="vistaActiva === 'ingresos'"></app-ingresos>
+
+    <!-- VISTA HISTORIAL: Componente de Historial Embebido -->
+    <app-historial *ngIf="vistaActiva === 'historial'"></app-historial>
 
   </main>
 </div>

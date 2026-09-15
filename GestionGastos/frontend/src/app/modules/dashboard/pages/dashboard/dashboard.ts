@@ -1,25 +1,30 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FinanzasService } from '../../../../core/services/finanzas.service';
+import { HistorialComponent } from '../historial/historial.component';
+import { IngresosComponent } from '../../../../ingresos/ingresos';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HistorialComponent, IngresosComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private finanzasService = inject(FinanzasService);
-  private router = inject(Router);
+  public router = inject(Router);
 
   usuario: any = null;
   private subIngreso!: Subscription;
   private subGastos!: Subscription;
+  private subRouter!: Subscription;
+
+  vistaActiva: 'inicio' | 'ingresos' | 'historial' = 'inicio';
 
   saldoActual: number = 0.00;
   ingresoMes: number = 0.00;
@@ -29,38 +34,51 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.usuario = this.authService.obtenerUsuario();
 
-    // Suscripción en tiempo real al valor guardado de ingresoMes
+    // Sincronizar estado inicial de la vista con la URL actual
+    this.actualizarVistaSegunUrl(this.router.url);
+
+    // Escuchar cambios de navegación
+    this.subRouter = this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.actualizarVistaSegunUrl(event.urlAfterRedirects);
+      });
+
     this.subIngreso = this.finanzasService.ingresoMes$.subscribe((monto) => {
       this.ingresoMes = monto;
       this.recalcularSaldo();
     });
 
-    // Suscripción en tiempo real al valor guardado de gastosMes
     this.subGastos = this.finanzasService.gastosMes$.subscribe((monto) => {
       this.gastosMes = monto;
       this.recalcularSaldo();
     });
   }
 
+  private actualizarVistaSegunUrl(url: string): void {
+    if (url.includes('/historial')) {
+      this.vistaActiva = 'historial';
+    } else if (url.includes('/ingresos')) {
+      this.vistaActiva = 'ingresos';
+    } else {
+      this.vistaActiva = 'inicio';
+    }
+  }
+
+  cambiarVista(vista: 'inicio' | 'ingresos' | 'historial'): void {
+    this.vistaActiva = vista;
+  }
+
   recalcularSaldo(): void {
-    // 1. Saldo disponible antes de retener ahorro
     const saldoBruto = Math.max(0, this.ingresoMes - this.gastosMes);
-
-    // 2. Extraemos el 5% para ahorro
     this.totalAhorro = saldoBruto * 0.05;
-
-    // 3. Restamos el ahorro al saldo actual
     this.saldoActual = saldoBruto - this.totalAhorro;
   }
 
   ngOnDestroy(): void {
-    // Limpieza de suscripciones al destruir el componente
-    if (this.subIngreso) {
-      this.subIngreso.unsubscribe();
-    }
-    if (this.subGastos) {
-      this.subGastos.unsubscribe();
-    }
+    if (this.subIngreso) this.subIngreso.unsubscribe();
+    if (this.subGastos) this.subGastos.unsubscribe();
+    if (this.subRouter) this.subRouter.unsubscribe();
   }
 
   cerrarSesion(): void {

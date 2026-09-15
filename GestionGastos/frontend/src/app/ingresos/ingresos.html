@@ -1,153 +1,84 @@
-<div class="dashboard-layout">
+<div class="instruction-banner">
+  <h2>Ingrese lo que generó este mes</h2>
+</div>
+
+<div class="ingresos-grid">
   
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" class="sidebar-logo">
-        <rect width="800" height="240" fill="#0B192C"/>
-        <g transform="translate(60, 40)">
-          <rect x="0" y="10" width="22" height="140" rx="11" fill="#E2D8B3"/>
-          <path d="M 28 15 L 98 125 A 12 12 0 0 0 118 118 L 118 10 Z" fill="#E2D8B3"/>
-          <rect x="126" y="30" width="22" height="120" rx="11" fill="#E2D8B3"/>
-          <circle cx="137" cy="12" r="10" fill="#E2D8B3"/>
-        </g>
-        <text x="250" y="115" font-family="'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="46" fill="#FFFFFF" letter-spacing="4">NEXUS</text>
-        <text x="440" y="115" font-family="'Segoe UI', Roboto, sans-serif" font-weight="300" font-size="46" fill="#E2D8B3" letter-spacing="6">FINANCE</text>
-        <line x1="250" y1="140" x2="650" y2="140" stroke="#E2D8B3" stroke-width="2" opacity="0.6"/>
-        <text x="250" y="170" font-family="'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="16" fill="#E2D8B3" letter-spacing="8">NEXUS SOFTWARE STUDIOS</text>
-      </svg>
+  <!-- Contenedor del KPI de Ingresos -->
+  <div class="kpi-ingresos-box">
+    <div class="kpi-header">
+      <span class="kpi-title">Ingreso de este mes</span>
+      <img src="ingresos.jpg" alt="ingreso de este mes" class="kpi-icon" />
+    </div>
+    <div class="kpi-blue-card card-input-wrapper">
+      <span class="currency-symbol">Q.</span>
+      <input 
+        type="number" 
+        class="custom-ingreso-input" 
+        [(ngModel)]="ingresoMes" 
+        (ngModelChange)="guardarIngreso()"
+        placeholder="0.00" 
+        step="0.01" 
+        min="0"
+      />
+    </div>
+  </div>
+
+  <!-- Tabla de Gastos -->
+  <div class="gastos-table-container">
+    <div class="table-pill-header">
+      <span>Gastos del mes</span>
     </div>
 
-    <nav class="sidebar-menu">
-      <div class="menu-top">
-        <a routerLink="/dashboard" class="menu-item">
-          <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 11h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zM4 21h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1z"/></svg>
-          Inicio
-        </a>
-        <a routerLink="/ingresos" class="menu-item active">
-          <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19h14v2H3V3h2v16zm4-8h2v6H9v-6zm4-4h2v10h-2V7zm4-4h2v14h-2V3z"/></svg>
-          Ingresos
-        </a>
-        <a routerLink="/historial" class="menu-item">
-          <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-          Historial
-        </a>
-      </div>
+    <table class="gastos-table">
+      <thead>
+        <tr>
+          <th>Gastos</th>
+          <th>Dinero a pagar</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr *ngFor="let gasto of listaGastos; let i = index">
+          <td>
+            <textarea 
+              [(ngModel)]="gasto.concepto" 
+              placeholder="Ingrese datos" 
+              class="table-input bold-text textarea-auto"
+              rows="1"
+            ></textarea>
+          </td>
+          <td class="monto-cell">
+            <span class="currency-label">Q.</span>
+            <input 
+              type="number" 
+              [(ngModel)]="gasto.monto" 
+              (ngModelChange)="actualizarBalances()"
+              placeholder="0.00" 
+              step="0.01"
+              min="0"
+              class="table-input monto-input"
+            />
+          </td>
+        </tr>
 
-      <div class="menu-bottom">
-        <a routerLink="/settings" class="menu-item">
-          <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6z"/></svg>
-          Settings
-        </a>
-        <button (click)="cerrarSesion()" class="menu-item logout-btn">
-          <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-          Log Out
-        </button>
-      </div>
-    </nav>
-  </aside>
+        <tr class="add-row-tr" (click)="agregarFila()">
+          <td colspan="2" class="add-row-btn">
+            <strong>Agregar fila (+)</strong>
+          </td>
+        </tr>
 
-  <main class="main-content">
-    
-    <header class="content-header">
-      <div>
-        <h1 class="page-title">Ingresos</h1>
-        <p class="page-subtitle">{{ fechaHoy }}</p>
-      </div>
-      <div class="user-profile">
-        <span class="user-name">{{ nombreUsuario }}</span>
-        <div class="user-avatar">
-          <svg viewBox="0 0 24 24" fill="#D1D5DB" width="45" height="45">
-            <circle cx="12" cy="12" r="12" fill="#E5E7EB"/>
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#9CA3AF"/>
-          </svg>
-        </div>
-      </div>
-    </header>
+        <tr class="total-row-tr">
+          <td class="total-label">
+            <strong>Total a pagar</strong>
+          </td>
+          <td class="total-value">
+            <strong>Q. {{ calcularTotalGastos() | number:'1.2-2' }}</strong>
+          </td>
+        </tr>
 
-    <div class="instruction-banner">
-      <h2>Ingrese lo que generó este mes</h2>
-    </div>
+      </tbody>
+    </table>
+  </div>
 
-    <div class="ingresos-grid">
-      
-      <!-- Contenedor del KPI de Ingresos -->
-      <div class="kpi-ingresos-box">
-        <div class="kpi-header">
-          <span class="kpi-title">Ingreso de este mes</span>
-          <img src="ingresos.jpg" alt="ingreso de este mes" class="kpi-icon" />
-        </div>
-        <div class="kpi-blue-card card-input-wrapper">
-          <span class="currency-symbol">Q.</span>
-          <input 
-            type="number" 
-            class="custom-ingreso-input" 
-            [(ngModel)]="ingresoMes" 
-            (ngModelChange)="guardarIngreso()"
-            placeholder="0.00" 
-            step="0.01" 
-            min="0"
-          />
-        </div>
-      </div>
-
-      <!-- Tabla de Gastos -->
-      <div class="gastos-table-container">
-        <div class="table-pill-header">
-          <span>Gastos del mes</span>
-        </div>
-
-        <table class="gastos-table">
-          <thead>
-            <tr>
-              <th>Gastos</th>
-              <th>Dinero a pagar</th>
-            </tr>
-          </thead>
-          <tbody>
-            
-            <tr *ngFor="let gasto of listaGastos; let i = index">
-              <td>
-                <textarea 
-                  [(ngModel)]="gasto.concepto" 
-                  placeholder="Ingrese datos" 
-                  class="table-input bold-text textarea-auto"
-                  rows="1"
-                ></textarea>
-              </td>
-              <td class="monto-cell">
-                <span class="currency-label">Q.</span>
-                <input 
-                  type="number" 
-                  [(ngModel)]="gasto.monto" 
-                  (ngModelChange)="actualizarBalances()"
-                  placeholder="0.00" 
-                  step="0.01"
-                  min="0"
-                  class="table-input monto-input"
-                />
-              </td>
-            </tr>
-
-            <tr class="add-row-tr" (click)="agregarFila()">
-              <td colspan="2" class="add-row-btn">
-                <strong>Agregar fila (+)</strong>
-              </td>
-            </tr>
-
-            <tr class="total-row-tr">
-              <td class="total-label">
-                <strong>Total a pagar</strong>
-              </td>
-              <td class="total-value">
-                <strong>Q. {{ calcularTotalGastos() | number:'1.2-2' }}</strong>
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-
-  </main>
 </div>
