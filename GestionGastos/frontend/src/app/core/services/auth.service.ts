@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, of } from 'rxjs';
@@ -15,11 +15,14 @@ export class AuthService {
 
   private apiUrl = 'http://localhost:3000/api/auth';
   private timerExpiracion: any;
+  
+  // Configura aquí los minutos de inactividad deseados
+  private readonly MINUTOS_INACTIVIDAD = 2; 
 
   constructor() {
     const token = this.obtenerToken();
     if (token) {
-      this.iniciarTemporizadorExpiracion(token);
+      this.reiniciarTemporizadorInactividad();
     }
   }
 
@@ -61,9 +64,22 @@ export class AuthService {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
     
-    // Notifica cambio de usuario al servicio de finanzas
     this.finanzasService.cargarDatosUsuario();
-    this.iniciarTemporizadorExpiracion(token, usuario);
+    this.reiniciarTemporizadorInactividad();
+  }
+
+  // Reinicia el contador de inactividad cada vez que el usuario interactúa
+  reiniciarTemporizadorInactividad(): void {
+    if (!this.obtenerToken()) return;
+
+    if (this.timerExpiracion) {
+      clearTimeout(this.timerExpiracion);
+    }
+
+    const tiempoMs = this.MINUTOS_INACTIVIDAD * 60 * 1000;
+    this.timerExpiracion = setTimeout(() => {
+      this.logoutPorExpiracion();
+    }, tiempoMs);
   }
 
   private limpiarSesion(): void {
@@ -75,7 +91,6 @@ export class AuthService {
       this.timerExpiracion = null;
     }
 
-    // Resetea los observables de finanzas al limpiar la sesión
     this.finanzasService.cargarDatosUsuario();
   }
 
@@ -98,7 +113,7 @@ export class AuthService {
 
     Swal.fire({
       title: 'Sesión Expirada',
-      text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+      text: `Tu sesión se ha cerrado por ${this.MINUTOS_INACTIVIDAD} minutos de inactividad.`,
       icon: 'warning',
       width: '380px',
       padding: '1.2em',
@@ -115,41 +130,6 @@ export class AuthService {
     }).then(() => {
       this.router.navigate(['/login']);
     });
-  }
-
-  iniciarTemporizadorExpiracion(token: string, usuarioParam?: any): void {
-    try {
-      if (this.timerExpiracion) clearTimeout(this.timerExpiracion);
-
-      const usuario = usuarioParam || this.obtenerUsuario();
-      const payload = this.decodificarJwtPayload(token);
-      
-      const esGoogle = usuario?.metodo === 'google' || payload?.iss?.includes('google');
-      let tiempoRestanteMs = 0;
-
-      if (esGoogle) {
-        tiempoRestanteMs = 2 * 60 * 1000; // 2 minutos exactos para cuentas de Google
-      } else {
-        if (!payload || !payload.exp) return;
-        tiempoRestanteMs = (payload.exp * 1000) - Date.now();
-      }
-
-      if (tiempoRestanteMs > 0) {
-        const maxDelay = 2147483647;
-        const delay = Math.min(tiempoRestanteMs, maxDelay);
-
-        this.timerExpiracion = setTimeout(() => {
-          this.logoutPorExpiracion();
-        }, delay);
-      } else {
-        // En lugar de disparar el modal inmediatamente durante la fase de construcción,
-        // limpia y redirige si el token ya expiró
-        this.limpiarSesion();
-      }
-    } catch (error) {
-      console.error('Error al procesar el token expirado:', error);
-      this.limpiarSesion();
-    }
   }
 
   private decodificarJwtPayload(token: string): any {
