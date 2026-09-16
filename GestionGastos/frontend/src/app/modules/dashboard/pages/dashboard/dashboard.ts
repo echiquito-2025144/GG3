@@ -29,6 +29,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   usuario: any = null;
   
+  private subUsuario!: Subscription;
   private subIngreso!: Subscription;
   private subGastos!: Subscription;
   private subSaldo!: Subscription;
@@ -45,7 +46,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   simboloMoneda: string = 'Q.';
 
   ngOnInit(): void {
-    this.usuario = this.authService.obtenerUsuario();
+    // Suscripción reactiva para escuchar cambios del usuario (incluida la foto)
+    this.subUsuario = this.authService.usuario$.subscribe((data) => {
+      this.usuario = data;
+    });
 
     // Sincronizar estado inicial de la vista con la URL actual
     this.actualizarVistaSegunUrl(this.router.url);
@@ -99,6 +103,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.subUsuario) this.subUsuario.unsubscribe();
     if (this.subIngreso) this.subIngreso.unsubscribe();
     if (this.subGastos) this.subGastos.unsubscribe();
     if (this.subSaldo) this.subSaldo.unsubscribe();

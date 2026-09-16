@@ -118,3 +118,81 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #0B192C;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-cambiar-foto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #0B192C;
+  color: #FFFFFF;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-cambiar-foto:hover {
+  background-color: #1E293B;
+}
+
+.btn-cambiar-foto:active {
+  transform: scale(0.97);
+}
+
+.user-details .user-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0B192C;
+  margin: 0;
+}
+
+.user-details .user-email {
+  font-size: 0.9rem;
+  color: #6B7280;
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.badge-account {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: #E2D8B3;
+  color: #0B192C;
+}

@@ -1,7 +1,7 @@
-import { Injectable, inject, HostListener } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, of } from 'rxjs';
+import { Observable, BehaviorSubject, tap, of } from 'rxjs';
 import Swal from 'sweetalert2';
 import { FinanzasService } from './finanzas.service';
 
@@ -16,8 +16,11 @@ export class AuthService {
   private apiUrl = 'http://localhost:3000/api/auth';
   private timerExpiracion: any;
   
-  // Configura aquí los minutos de inactividad deseados
   private readonly MINUTOS_INACTIVIDAD = 2; 
+
+  // Estado reactivo del usuario
+  private usuarioSubject = new BehaviorSubject<any>(this.obtenerUsuarioDeStorage());
+  public usuario$ = this.usuarioSubject.asObservable();
 
   constructor() {
     const token = this.obtenerToken();
@@ -64,11 +67,11 @@ export class AuthService {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
     
+    this.usuarioSubject.next(usuario); // Emite datos a la app
     this.finanzasService.cargarDatosUsuario();
     this.reiniciarTemporizadorInactividad();
   }
 
-  // Reinicia el contador de inactividad cada vez que el usuario interactúa
   reiniciarTemporizadorInactividad(): void {
     if (!this.obtenerToken()) return;
 
@@ -91,16 +94,26 @@ export class AuthService {
       this.timerExpiracion = null;
     }
 
+    this.usuarioSubject.next(null); // Notifica el cierre de sesión
     this.finanzasService.cargarDatosUsuario();
   }
 
-  obtenerUsuario(): any {
+  private obtenerUsuarioDeStorage(): any {
     const usuarioStr = localStorage.getItem('usuario');
     return usuarioStr ? JSON.parse(usuarioStr) : null;
   }
 
+  obtenerUsuario(): any {
+    return this.usuarioSubject.value;
+  }
+
   obtenerToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  actualizarUsuario(usuarioActualizado: any): void {
+    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+    this.usuarioSubject.next(usuarioActualizado); // Emite la foto nueva en tiempo real
   }
 
   logout(): void {

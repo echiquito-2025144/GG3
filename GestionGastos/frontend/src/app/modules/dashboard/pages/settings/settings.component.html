@@ -5,13 +5,23 @@
   </div>
 
   <div class="cards-grid">
-    <!-- Card 1: Perfil -->
     <div class="settings-card">
       <h3>Perfil de Usuario</h3>
       <div class="user-info">
-        <div class="avatar-circle">
-          {{ usuario?.nombre ? usuario.nombre[0].toUpperCase() : 'U' }}
+        <div class="avatar-container">
+          <div class="avatar-circle">
+            <img *ngIf="fotoPreview" [src]="fotoPreview" alt="Foto de perfil" class="avatar-img" />
+            <span *ngIf="!fotoPreview">{{ usuario?.nombre ? usuario.nombre[0].toUpperCase() : 'U' }}</span>
+          </div>
+          <label class="btn-cambiar-foto">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M3 4V1h2v3h3v2H5v3H3V6H0V4h3zm3 6V7h3V4h7l1.83 2H21c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10h3zm7 9c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3z"/>
+            </svg>
+            Cambiar foto
+            <input type="file" (change)="onFotoSeleccionada($event)" accept="image/*" hidden />
+          </label>
         </div>
+
         <div class="details">
           <p class="user-name">{{ usuario?.nombre || 'Usuario' }}</p>
           <p class="user-email">{{ usuario?.email || 'Sin correo asociado' }}</p>
@@ -20,7 +30,6 @@
       </div>
     </div>
 
-    <!-- Card 2: Preferencias Financieras -->
     <div class="settings-card">
       <h3>Preferencias Financieras</h3>
       <div class="form-group">
@@ -39,7 +48,6 @@
       <button class="btn-primary" (click)="guardarPreferencias()">Guardar Cambios</button>
     </div>
 
-    <!-- Card 3: Gestión de Datos -->
     <div class="settings-card danger-card">
       <h3>Mantenimiento de Datos</h3>
       <p>Limpia tus registros de ingresos y gastos del periodo activo si deseas iniciar un nuevo ciclo.</p>
