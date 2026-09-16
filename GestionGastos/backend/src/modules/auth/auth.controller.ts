@@ -43,4 +43,28 @@ export class AuthController {
       });
     }
   }
+
+  static async actualizarFoto(req: Request, res: Response) {
+    try {
+      const { email, foto } = req.body;
+
+      if (!email || !foto) {
+        return res.status(400).json({
+          mensaje: 'El correo y la foto son obligatorios',
+          message: 'El correo y la foto son obligatorios'
+        });
+      }
+
+      const usuarioActualizado = await AuthService.actualizarFoto(email, foto);
+      return res.json({
+        mensaje: 'Foto actualizada correctamente',
+        usuario: usuarioActualizado
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        mensaje: error.message || 'Error al actualizar la foto',
+        message: error.message || 'Error al actualizar la foto'
+      });
+    }
+  }
 }

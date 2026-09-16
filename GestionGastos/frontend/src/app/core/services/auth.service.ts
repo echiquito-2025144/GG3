@@ -162,4 +162,22 @@ export class AuthService {
       return null;
     }
   }
+
+  actualizarFotoPerfil(fotoBase64: string): Observable<any> {
+      const usuarioActual = this.obtenerUsuario();
+
+      return this.http.patch<any>(`${this.apiUrl}/perfil/foto`, { 
+        email: usuarioActual?.email,
+        foto: fotoBase64 
+      }).pipe(
+        tap((res: any) => {
+          // Actualizamos el estado local en localStorage y en el BehaviorSubject
+          const usuarioActualizado = { 
+            ...usuarioActual, 
+            foto: res.usuario?.foto || fotoBase64 
+          };
+        this.actualizarUsuario(usuarioActualizado);
+      })
+    );
+  }
 }

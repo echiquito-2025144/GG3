@@ -1,6 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -11,21 +12,22 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private subUsuario!: Subscription;
 
   usuario: any = null;
   fotoPreview: string | null = null;
 
-  // Propiedades requeridas por la plantilla
   monedaSeleccionada: string = 'GTQ';
   porcentajeAhorroMeta: number = 10;
 
   ngOnInit(): void {
-    this.usuario = this.authService.obtenerUsuario() || {};
-    this.fotoPreview = this.usuario?.foto || null;
-    
-    // Cargar preferencias guardadas si existen
+    this.subUsuario = this.authService.usuario$.subscribe((user) => {
+      this.usuario = user || {};
+      this.fotoPreview = this.usuario?.foto || null;
+    });
+
     const configuracion = JSON.parse(localStorage.getItem('config_finanzas') || '{}');
     if (configuracion.moneda) this.monedaSeleccionada = configuracion.moneda;
     if (configuracion.ahorro) this.porcentajeAhorroMeta = configuracion.ahorro;
@@ -46,17 +48,42 @@ export class SettingsComponent implements OnInit {
 
       const reader = new FileReader();
       reader.onload = () => {
-        this.fotoPreview = reader.result as string;
-        if (this.usuario) {
-          this.usuario.foto = this.fotoPreview;
-          this.authService.actualizarUsuario(this.usuario);
+        const fotoBase64 = reader.result as string;
+
+        // Si el AuthService ya tiene el método para persistir en backend
+        if (typeof (this.authService as any).actualizarFotoPerfil === 'function') {
+          (this.authService as any).actualizarFotoPerfil(fotoBase64).subscribe({
+            next: () => {
+              this.fotoPreview = fotoBase64;
+              Swal.fire({
+                title: 'Foto guardada',
+                text: 'Imagen de perfil sincronizada con tu cuenta.',
+                icon: 'success',
+                confirmButtonColor: '#0B192C',
+                timer: 1800,
+                showConfirmButton: false
+              });
+            },
+            error: () => {
+              this.actualizarLocal(fotoBase64);
+            }
+          });
+        } else {
+          this.actualizarLocal(fotoBase64);
         }
       };
       reader.readAsDataURL(file);
     }
   }
 
-  // Métodos requeridos por la plantilla
+  private actualizarLocal(fotoBase64: string): void {
+    this.fotoPreview = fotoBase64;
+    if (this.usuario) {
+      this.usuario.foto = fotoBase64;
+      this.authService.actualizarUsuario(this.usuario);
+    }
+  }
+
   guardarPreferencias(): void {
     const config = {
       moneda: this.monedaSeleccionada,
@@ -95,5 +122,11 @@ export class SettingsComponent implements OnInit {
         });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.subUsuario) {
+      this.subUsuario.unsubscribe();
+    }
   }
 }

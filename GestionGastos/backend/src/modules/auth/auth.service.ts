@@ -1,6 +1,6 @@
 import { pool } from '../../config/database';
 import bcrypt from 'bcrypt';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 export class AuthService {
   static async login(email: string, passwordPlana: string) {
@@ -22,7 +22,7 @@ export class AuthService {
     const token = jwt.sign(
       { id: usuario.id, email: usuario.email, rol: usuario.rol },
       secret,
-      { expiresIn: '2m' } //  Expira en 2 minutos
+      { expiresIn: '2m' } // Expira en 2 minutos
     );
 
     return {
@@ -31,7 +31,8 @@ export class AuthService {
         id: usuario.id,
         nombre: usuario.nombre,
         email: usuario.email,
-        rol: usuario.rol
+        rol: usuario.rol,
+        foto: usuario.foto || '' // Devuelve la foto de la BD
       }
     };
   }
@@ -46,8 +47,8 @@ export class AuthService {
     const passwordEncriptada = await bcrypt.hash(passwordPlana, saltRounds);
 
     const result = await pool.query(
-      'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol',
-      [nombre, email, passwordEncriptada, 'USUARIO']
+      'INSERT INTO usuarios (nombre, email, password, rol, foto) VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre, email, rol, foto',
+      [nombre, email, passwordEncriptada, 'USUARIO', '']
     );
 
     const nuevoUsuario = result.rows[0];
@@ -57,12 +58,29 @@ export class AuthService {
     const token = jwt.sign(
       { id: nuevoUsuario.id, email: nuevoUsuario.email, rol: nuevoUsuario.rol },
       secret,
-      { expiresIn: '2m' } //  Expira en 2 minutos
+      { expiresIn: '2m' } // Expira en 2 minutos
     );
 
     return {
       token,
-      usuario: nuevoUsuario
+      usuario: {
+        ...nuevoUsuario,
+        foto: nuevoUsuario.foto || ''
+      }
     };
+  }
+
+  // Método para actualizar y persistir la foto en la BD
+  static async actualizarFoto(email: string, foto: string) {
+    const result = await pool.query(
+      'UPDATE usuarios SET foto = $1 WHERE email = $2 RETURNING id, nombre, email, rol, foto',
+      [foto, email]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    return result.rows[0];
   }
 }
