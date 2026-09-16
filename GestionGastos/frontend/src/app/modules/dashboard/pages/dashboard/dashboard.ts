@@ -20,8 +20,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public router = inject(Router);
 
   usuario: any = null;
+  
   private subIngreso!: Subscription;
   private subGastos!: Subscription;
+  private subSaldo!: Subscription;
+  private subAhorro!: Subscription;
   private subRouter!: Subscription;
 
   vistaActiva: 'inicio' | 'ingresos' | 'historial' = 'inicio';
@@ -44,15 +47,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.actualizarVistaSegunUrl(event.urlAfterRedirects);
       });
 
+    // Suscripciones reactivas al servicio centralizado de finanzas
     this.subIngreso = this.finanzasService.ingresoMes$.subscribe((monto) => {
       this.ingresoMes = monto;
-      this.recalcularSaldo();
     });
 
     this.subGastos = this.finanzasService.gastosMes$.subscribe((monto) => {
       this.gastosMes = monto;
-      this.recalcularSaldo();
     });
+
+    this.subSaldo = this.finanzasService.saldoActual$.subscribe((saldo) => {
+      this.saldoActual = saldo;
+    });
+
+    this.subAhorro = this.finanzasService.totalAhorro$.subscribe((ahorro) => {
+      this.totalAhorro = ahorro;
+    });
+
+    // Forzar lectura inicial al montar el componente
+    this.finanzasService.cargarDatosUsuario();
   }
 
   private actualizarVistaSegunUrl(url: string): void {
@@ -69,15 +82,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.vistaActiva = vista;
   }
 
-  recalcularSaldo(): void {
-    const saldoBruto = Math.max(0, this.ingresoMes - this.gastosMes);
-    this.totalAhorro = saldoBruto * 0.05;
-    this.saldoActual = saldoBruto - this.totalAhorro;
-  }
-
   ngOnDestroy(): void {
     if (this.subIngreso) this.subIngreso.unsubscribe();
     if (this.subGastos) this.subGastos.unsubscribe();
+    if (this.subSaldo) this.subSaldo.unsubscribe();
+    if (this.subAhorro) this.subAhorro.unsubscribe();
     if (this.subRouter) this.subRouter.unsubscribe();
   }
 

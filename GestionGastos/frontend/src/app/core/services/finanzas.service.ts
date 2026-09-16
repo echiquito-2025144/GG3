@@ -27,6 +27,12 @@ export class FinanzasService {
   private gastosMesSubject = new BehaviorSubject<number>(0);
   public gastosMes$: Observable<number> = this.gastosMesSubject.asObservable();
 
+  private saldoActualSubject = new BehaviorSubject<number>(0);
+  public saldoActual$: Observable<number> = this.saldoActualSubject.asObservable();
+
+  private totalAhorroSubject = new BehaviorSubject<number>(0);
+  public totalAhorro$: Observable<number> = this.totalAhorroSubject.asObservable();
+
   private historialSubject = new BehaviorSubject<RegistroHistorial[]>([]);
   public historial$: Observable<RegistroHistorial[]> = this.historialSubject.asObservable();
 
@@ -37,7 +43,6 @@ export class FinanzasService {
     this.cargarDatosUsuario();
   }
 
-  // Genera clave única por usuario leyendo directamente localStorage
   private obtenerKey(clave: string): string {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {
@@ -54,12 +59,8 @@ export class FinanzasService {
 
   cargarDatosUsuario(): void {
     const usuarioStr = localStorage.getItem('usuario');
-    
     if (!usuarioStr) {
-      this.ingresoMesSubject.next(0);
-      this.gastosMesSubject.next(0);
-      this.historialSubject.next([]);
-      this.listaGastosSubject.next([]);
+      this.resetearValores();
       return;
     }
 
@@ -73,8 +74,18 @@ export class FinanzasService {
 
     this.ingresoMesSubject.next(ingresoVal);
     this.listaGastosSubject.next(gastosArr);
-    this.recalcularTotalGastos(gastosArr);
     this.historialSubject.next(historialArr);
+
+    this.recalcularSaldosYAhorro(ingresoVal, gastosArr);
+  }
+
+  private resetearValores(): void {
+    this.ingresoMesSubject.next(0);
+    this.gastosMesSubject.next(0);
+    this.saldoActualSubject.next(0);
+    this.totalAhorroSubject.next(0);
+    this.historialSubject.next([]);
+    this.listaGastosSubject.next([]);
   }
 
   obtenerIngresoActual(): number {
@@ -88,6 +99,13 @@ export class FinanzasService {
   actualizarIngreso(monto: number): void {
     localStorage.setItem(this.obtenerKey('ingresoMes'), monto.toString());
     this.ingresoMesSubject.next(monto);
+    this.recalcularSaldosYAhorro(monto, this.listaGastosSubject.value);
+  }
+
+  actualizarListaGastos(gastos: ItemGasto[]): void {
+    localStorage.setItem(this.obtenerKey('listaGastos'), JSON.stringify(gastos));
+    this.listaGastosSubject.next(gastos);
+    this.recalcularSaldosYAhorro(this.ingresoMesSubject.value, gastos);
   }
 
   actualizarGastos(monto: number): void {
@@ -95,15 +113,19 @@ export class FinanzasService {
     this.gastosMesSubject.next(monto);
   }
 
-  actualizarListaGastos(gastos: ItemGasto[]): void {
-    localStorage.setItem(this.obtenerKey('listaGastos'), JSON.stringify(gastos));
-    this.listaGastosSubject.next(gastos);
-    this.recalcularTotalGastos(gastos);
-  }
+  private recalcularSaldosYAhorro(ingreso: number, gastos: ItemGasto[]): void {
+    const totalGastos = gastos.reduce((sum, g) => sum + (typeof g.monto === 'number' && !isNaN(g.monto) ? g.monto : 0), 0);
+    this.gastosMesSubject.next(totalGastos);
 
-  private recalcularTotalGastos(gastos: ItemGasto[]): void {
-    const total = gastos.reduce((sum, g) => sum + (typeof g.monto === 'number' && !isNaN(g.monto) ? g.monto : 0), 0);
-    this.gastosMesSubject.next(total);
+    const saldo = ingreso - totalGastos;
+    this.saldoActualSubject.next(saldo);
+
+    // 5% de ahorro únicamente sobre el sobrante positivo
+    const ahorro = saldo > 0 ? saldo * 0.05 : 0;
+    this.totalAhorroSubject.next(ahorro);
+
+    localStorage.setItem(this.obtenerKey('saldoActual'), saldo.toString());
+    localStorage.setItem(this.obtenerKey('totalAhorro'), ahorro.toString());
   }
 
   eliminarRegistroHistorial(id: string): void {
