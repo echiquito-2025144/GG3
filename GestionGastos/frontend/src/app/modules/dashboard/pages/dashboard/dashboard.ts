@@ -6,11 +6,18 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { FinanzasService } from '../../../../core/services/finanzas.service';
 import { HistorialComponent } from '../historial/historial.component';
 import { IngresosComponent } from '../../../../ingresos/ingresos';
+import { SettingsComponent } from '../settings/settings.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, HistorialComponent, IngresosComponent],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    HistorialComponent, 
+    IngresosComponent, 
+    SettingsComponent
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -25,14 +32,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private subGastos!: Subscription;
   private subSaldo!: Subscription;
   private subAhorro!: Subscription;
+  private subMoneda!: Subscription;
   private subRouter!: Subscription;
 
-  vistaActiva: 'inicio' | 'ingresos' | 'historial' = 'inicio';
+  vistaActiva: 'inicio' | 'ingresos' | 'historial' | 'settings' = 'inicio';
 
   saldoActual: number = 0.00;
   ingresoMes: number = 0.00;
   gastosMes: number = 0.00;
   totalAhorro: number = 0.00;
+  simboloMoneda: string = 'Q.';
 
   ngOnInit(): void {
     this.usuario = this.authService.obtenerUsuario();
@@ -64,6 +73,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.totalAhorro = ahorro;
     });
 
+    this.subMoneda = this.finanzasService.moneda$.subscribe((simbolo) => {
+      this.simboloMoneda = simbolo;
+    });
+
     // Forzar lectura inicial al montar el componente
     this.finanzasService.cargarDatosUsuario();
   }
@@ -73,12 +86,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.vistaActiva = 'historial';
     } else if (url.includes('/ingresos')) {
       this.vistaActiva = 'ingresos';
+    } else if (url.includes('/settings')) {
+      this.vistaActiva = 'settings';
     } else {
       this.vistaActiva = 'inicio';
     }
   }
 
-  cambiarVista(vista: 'inicio' | 'ingresos' | 'historial'): void {
+  cambiarVista(vista: 'inicio' | 'ingresos' | 'historial' | 'settings'): void {
     this.vistaActiva = vista;
   }
 
@@ -87,6 +102,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.subGastos) this.subGastos.unsubscribe();
     if (this.subSaldo) this.subSaldo.unsubscribe();
     if (this.subAhorro) this.subAhorro.unsubscribe();
+    if (this.subMoneda) this.subMoneda.unsubscribe();
     if (this.subRouter) this.subRouter.unsubscribe();
   }
 

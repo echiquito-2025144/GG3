@@ -1,6 +1,6 @@
 <div class="dashboard-layout">
   
-  <!-- Sidebar (Permanece SIEMPRE visible) -->
+  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" class="sidebar-logo">
@@ -20,7 +20,6 @@
 
     <nav class="sidebar-menu">
       <div class="menu-top">
-        <!-- Botón Inicio -->
         <button 
           type="button"
           (click)="cambiarVista('inicio')" 
@@ -30,7 +29,6 @@
           Inicio
         </button>
 
-        <!-- Botón Ingresos (Cambiado a botón de cambio de vista interna) -->
         <button 
           type="button"
           (click)="cambiarVista('ingresos')" 
@@ -40,7 +38,6 @@
           Ingresos
         </button>
         
-        <!-- Botón Historial -->
         <button 
           type="button"
           (click)="cambiarVista('historial')" 
@@ -52,10 +49,14 @@
       </div>
 
       <div class="menu-bottom">
-        <a routerLink="/settings" class="menu-item">
+        <button 
+          type="button"
+          (click)="cambiarVista('settings')" 
+          [class.active]="vistaActiva === 'settings'" 
+          class="menu-item">
           <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6z"/></svg>
           Settings
-        </a>
+        </button>
         <button (click)="cerrarSesion()" class="menu-item logout-btn">
           <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
           Log Out
@@ -70,10 +71,10 @@
     <header class="content-header">
       <div>
         <h1 class="page-title">
-          {{ vistaActiva === 'inicio' ? 'Dashboard' : (vistaActiva === 'ingresos' ? 'Ingresos' : 'Historial') }}
+          {{ vistaActiva === 'inicio' ? 'Dashboard' : (vistaActiva === 'ingresos' ? 'Ingresos' : (vistaActiva === 'historial' ? 'Historial' : 'Ajustes')) }}
         </h1>
         <p class="page-subtitle">
-          {{ vistaActiva === 'inicio' ? 'Resumen de sus gastos personales de este mes' : (vistaActiva === 'ingresos' ? 'Gestión de ingresos y gastos' : '15/09/2026') }}
+          {{ vistaActiva === 'inicio' ? 'Resumen de sus gastos personales de este mes' : (vistaActiva === 'ingresos' ? 'Gestión de ingresos y gastos' : (vistaActiva === 'historial' ? '15/09/2026' : 'Configuración del sistema y preferencias')) }}
         </p>
       </div>
       <div class="user-profile">
@@ -94,7 +95,7 @@
           <img src="billetera.jpg" alt="Saldo Actual" class="kpi-icon" />
         </div>
         <div class="card-value-box">
-          <span class="currency-value">Q. {{ saldoActual | number:'1.2-2' }}</span>
+          <span class="currency-value">{{ simboloMoneda }} {{ saldoActual | number:'1.2-2' }}</span>
         </div>
       </div>
 
@@ -105,7 +106,7 @@
           <img src="ingreso.jpg" alt="Ingreso de este mes" class="kpi-icon" />
         </div>
         <div class="card-value-box">
-          <span class="currency-value">Q. {{ ingresoMes | number:'1.2-2' }}</span>
+          <span class="currency-value">{{ simboloMoneda }} {{ ingresoMes | number:'1.2-2' }}</span>
         </div>
       </div>
 
@@ -116,7 +117,7 @@
           <img src="egresos.jpg" alt="Gastos de este mes" class="kpi-icon" />
         </div>
         <div class="card-value-box">
-          <span class="currency-value">Q. {{ gastosMes | number:'1.2-2' }}</span>
+          <span class="currency-value">{{ simboloMoneda }} {{ gastosMes | number:'1.2-2' }}</span>
         </div>
       </div>
 
@@ -127,17 +128,16 @@
           <img src="ahorro.jpg" alt="Total Ahorro" class="kpi-icon" />
         </div>
         <div class="card-value-box">
-          <span class="currency-value">Q. {{ totalAhorro | number:'1.2-2' }}</span>
+          <span class="currency-value">{{ simboloMoneda }} {{ totalAhorro | number:'1.2-2' }}</span>
         </div>
       </div>
 
     </section>
 
-    <!-- VISTA INGRESOS: Si tienes el componente de Ingresos declarado o la opción de router-outlet -->
+    <!-- VISTAS SECUNDARIAS -->
     <app-ingresos *ngIf="vistaActiva === 'ingresos'"></app-ingresos>
-
-    <!-- VISTA HISTORIAL: Componente de Historial Embebido -->
     <app-historial *ngIf="vistaActiva === 'historial'"></app-historial>
+    <app-settings *ngIf="vistaActiva === 'settings'"></app-settings>
 
   </main>
 </div>

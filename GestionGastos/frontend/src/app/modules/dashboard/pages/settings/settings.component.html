@@ -1,0 +1,49 @@
+<div class="settings-container">
+  <div class="header-section">
+    <h2>Configuración de la Cuenta</h2>
+    <p>Administra tu perfil, preferencias visuales y gestión de datos financieros.</p>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Card 1: Perfil -->
+    <div class="settings-card">
+      <h3>Perfil de Usuario</h3>
+      <div class="user-info">
+        <div class="avatar-circle">
+          {{ usuario?.nombre ? usuario.nombre[0].toUpperCase() : 'U' }}
+        </div>
+        <div class="details">
+          <p class="user-name">{{ usuario?.nombre || 'Usuario' }}</p>
+          <p class="user-email">{{ usuario?.email || 'Sin correo asociado' }}</p>
+          <span class="badge">{{ usuario?.metodo === 'google' ? 'Cuenta Google' : 'Cuenta Local' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Preferencias Financieras -->
+    <div class="settings-card">
+      <h3>Preferencias Financieras</h3>
+      <div class="form-group">
+        <label>Moneda de Visualización</label>
+        <select [(ngModel)]="monedaSeleccionada" class="form-control">
+          <option value="GTQ">Quetzal Guatemalteco (Q.)</option>
+          <option value="USD">Dólar Estadounidense ($)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Meta de Ahorro Automático (%)</label>
+        <input type="number" [(ngModel)]="porcentajeAhorroMeta" class="form-control" min="1" max="100" />
+      </div>
+
+      <button class="btn-primary" (click)="guardarPreferencias()">Guardar Cambios</button>
+    </div>
+
+    <!-- Card 3: Gestión de Datos -->
+    <div class="settings-card danger-card">
+      <h3>Mantenimiento de Datos</h3>
+      <p>Limpia tus registros de ingresos y gastos del periodo activo si deseas iniciar un nuevo ciclo.</p>
+      <button class="btn-danger" (click)="limpiarDatosMes()">Reiniciar Mes Actual</button>
+    </div>
+  </div>
+</div>

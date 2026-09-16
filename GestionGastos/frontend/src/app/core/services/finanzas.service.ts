@@ -39,6 +39,13 @@ export class FinanzasService {
   private listaGastosSubject = new BehaviorSubject<ItemGasto[]>([]);
   public listaGastos$: Observable<ItemGasto[]> = this.listaGastosSubject.asObservable();
 
+  // Estados para Moneda y Porcentaje
+  private monedaSubject = new BehaviorSubject<string>('Q.');
+  public moneda$: Observable<string> = this.monedaSubject.asObservable();
+
+  private porcentajeAhorroSubject = new BehaviorSubject<number>(5);
+  public porcentajeAhorro$: Observable<number> = this.porcentajeAhorroSubject.asObservable();
+
   constructor() {
     this.cargarDatosUsuario();
   }
@@ -67,14 +74,19 @@ export class FinanzasService {
     const ingresoGuardado = localStorage.getItem(this.obtenerKey('ingresoMes'));
     const gastosGuardados = localStorage.getItem(this.obtenerKey('listaGastos'));
     const historialGuardado = localStorage.getItem(this.obtenerKey('historialFinanzas'));
+    const monedaGuardada = localStorage.getItem(this.obtenerKey('moneda')) || 'Q.';
+    const porcentajeGuardado = localStorage.getItem(this.obtenerKey('porcentajeAhorro'));
 
     const ingresoVal = ingresoGuardado ? parseFloat(ingresoGuardado) : 0;
     const gastosArr: ItemGasto[] = gastosGuardados ? JSON.parse(gastosGuardados) : [];
     const historialArr: RegistroHistorial[] = historialGuardado ? JSON.parse(historialGuardado) : [];
+    const pctVal = porcentajeGuardado ? parseFloat(porcentajeGuardado) : 5;
 
     this.ingresoMesSubject.next(ingresoVal);
     this.listaGastosSubject.next(gastosArr);
     this.historialSubject.next(historialArr);
+    this.monedaSubject.next(monedaGuardada);
+    this.porcentajeAhorroSubject.next(pctVal);
 
     this.recalcularSaldosYAhorro(ingresoVal, gastosArr);
   }
@@ -86,6 +98,8 @@ export class FinanzasService {
     this.totalAhorroSubject.next(0);
     this.historialSubject.next([]);
     this.listaGastosSubject.next([]);
+    this.monedaSubject.next('Q.');
+    this.porcentajeAhorroSubject.next(5);
   }
 
   obtenerIngresoActual(): number {
@@ -94,6 +108,14 @@ export class FinanzasService {
 
   obtenerListaGastosActual(): ItemGasto[] {
     return this.listaGastosSubject.value;
+  }
+
+  obtenerMonedaActual(): string {
+    return this.monedaSubject.value;
+  }
+
+  obtenerPorcentajeAhorroActual(): number {
+    return this.porcentajeAhorroSubject.value;
   }
 
   actualizarIngreso(monto: number): void {
@@ -113,6 +135,17 @@ export class FinanzasService {
     this.gastosMesSubject.next(monto);
   }
 
+  actualizarPreferencias(moneda: string, porcentaje: number): void {
+    const simbolo = moneda === 'USD' ? '$' : 'Q.';
+    localStorage.setItem(this.obtenerKey('moneda'), simbolo);
+    localStorage.setItem(this.obtenerKey('porcentajeAhorro'), porcentaje.toString());
+
+    this.monedaSubject.next(simbolo);
+    this.porcentajeAhorroSubject.next(porcentaje);
+
+    this.recalcularSaldosYAhorro(this.ingresoMesSubject.value, this.listaGastosSubject.value);
+  }
+
   private recalcularSaldosYAhorro(ingreso: number, gastos: ItemGasto[]): void {
     const totalGastos = gastos.reduce((sum, g) => sum + (typeof g.monto === 'number' && !isNaN(g.monto) ? g.monto : 0), 0);
     this.gastosMesSubject.next(totalGastos);
@@ -120,8 +153,9 @@ export class FinanzasService {
     const saldo = ingreso - totalGastos;
     this.saldoActualSubject.next(saldo);
 
-    // 5% de ahorro únicamente sobre el sobrante positivo
-    const ahorro = saldo > 0 ? saldo * 0.05 : 0;
+    // Recálculo dinámico con el porcentaje de Settings
+    const porcentajeDecimal = this.porcentajeAhorroSubject.value / 100;
+    const ahorro = saldo > 0 ? saldo * porcentajeDecimal : 0;
     this.totalAhorroSubject.next(ahorro);
 
     localStorage.setItem(this.obtenerKey('saldoActual'), saldo.toString());
