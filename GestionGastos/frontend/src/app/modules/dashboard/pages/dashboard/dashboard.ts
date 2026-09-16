@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
+import Swal from 'sweetalert2';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FinanzasService } from '../../../../core/services/finanzas.service';
 import { HistorialComponent } from '../historial/historial.component';
@@ -107,7 +108,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   cerrarSesion(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: 'Tendrás que iniciar sesión nuevamente para acceder a tus finanzas.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#0B192C',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      background: '#ffffff',
+      color: '#0B192C'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.authService.logout();
+      }
+    });
   }
 }

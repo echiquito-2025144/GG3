@@ -75,6 +75,7 @@ export class AuthService {
       this.timerExpiracion = null;
     }
 
+    // Resetea los observables de finanzas al limpiar la sesión
     this.finanzasService.cargarDatosUsuario();
   }
 
@@ -141,11 +142,13 @@ export class AuthService {
           this.logoutPorExpiracion();
         }, delay);
       } else {
-        this.logoutPorExpiracion();
+        // En lugar de disparar el modal inmediatamente durante la fase de construcción,
+        // limpia y redirige si el token ya expiró
+        this.limpiarSesion();
       }
     } catch (error) {
       console.error('Error al procesar el token expirado:', error);
-      this.logoutPorExpiracion();
+      this.limpiarSesion();
     }
   }
 
